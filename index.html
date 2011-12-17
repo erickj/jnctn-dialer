@@ -1,0 +1,741 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>index.html - Friday, December 16 2011</title>
+
+  <style type="text/css">
+    body {
+      padding: 0;
+      margin: 0;
+
+      font-family: "Lucida Sans", sans-serif;
+      color: #464646;
+    }
+
+    #header {
+      position: absolute;
+      height: 32px;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: #D5D5D5;
+      background-size: 100%;
+      background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #d5d5d5), color-stop(100%, #a8a8a8));
+      background-image: -webkit-linear-gradient(#d5d5d5, #a8a8a8);
+      background-image: -moz-linear-gradient(#d5d5d5, #a8a8a8);
+      background-image: -o-linear-gradient(#d5d5d5, #a8a8a8);
+      background-image: -ms-linear-gradient(#d5d5d5, #a8a8a8);
+      background-image: linear-gradient(#d5d5d5, #a8a8a8);
+      border-bottom-width: 1px;
+      border-color: #888;
+      border-left-color: #D5D5D5;
+
+      z-index: 2; /* need for dial box */
+    }
+
+    #header h1 {
+      font-size: 18px;
+      color: #3C3C44;
+      padding: 0;
+      margin: 0;
+      margin-top: 3px;
+      margin-left: 5px;
+    }
+
+    #header #dial-from {
+      position: absolute;
+      width: 260px;
+      right: 290px;
+      top: 7px;
+      font-size: 11px;
+      text-align: right;
+    }
+
+    #header #dial-from select {
+      width: 190px;
+    }
+
+    #header .dialer {
+      position: absolute;
+      right: 80px;
+      width: 200px;
+      height: 15px;
+      top: 3px;
+    }
+
+    #header .dialer input {
+      position: relative;
+    }
+
+    #header .logout {
+      position: absolute;
+      top: 8px;
+      right: 30px;
+      height: 14px;
+      text-decoration: underline;
+      font-size: 11px;
+    }
+
+    #header .logout:hover {
+      cursor: pointer;
+    }
+
+    #app-container {
+      position: absolute;
+      top: 33px;
+      left: 0;
+      bottom: 0;
+      right: 0;
+    }
+
+    #app-login {
+      position: absolute;
+      left: 10px;
+      top: 10px;
+      height: 80px;
+    }
+
+    #app-login input {
+      display: block;
+      margin-top: 5px;
+    }
+
+    #app-login input[type=text],
+    #app-login input[type=password] {
+      width: 200px;
+    }
+
+    .user-list {
+      position: absolute;
+      left: 0;
+      width: 45%;
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      border-right: 1px solid #999;
+    }
+
+    .user-info {
+      position: absolute;
+      right: 0;
+      width: 55%;
+      height: 100%;
+      overflow: auto;
+    }
+
+    .user-info .user-contact {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      bottom: 0;
+      right: 0;
+      font-size: 14px;
+    }
+
+    .user-info .user-contact .user-name {
+      position: relative;
+      font-size: 30px;
+    }
+
+    .user-info .user-contact .user-contact-pair {
+      position: relative;
+      width: 100%;
+      margin-top: 5px;
+    }
+
+    .user-info .user-contact .user-contact-label {
+      display: inline-block;
+      position: relative;
+      width: 30%;
+      margin-right: 10px;
+      vertical-align: top;
+      text-align: right;
+      font-weight: bold;
+    }
+
+    .user-info .user-contact .user-contact-value {
+      display: inline-block;
+      position: relative;
+    }
+
+    .user {
+      position: relative;
+      height: 45px;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .user .name {
+      position: absolute;
+      top: 3px;
+      left: 5px;
+      font-size: 15px;
+    }
+
+    .user .sip {
+      position: absolute;
+      top: 22px;
+      left: 5px;
+      color: #333;
+      font-size: 11px;
+    }
+
+    .user .call-button.sip {
+      position: absolute;
+      overflow: hidden;
+      height: 33px;
+      width: 33px;
+      top: 5px;
+      right: 10px;
+      left: auto;
+      color: transparent;
+
+      background: url(btn_contact-call_available_overlay_selected.png) no-repeat 0 0;
+    }
+
+    .user.selected .call-button.sip {
+      background: url(btn_contact-call_available_selected.png) no-repeat 0 0;
+      color: transparent;
+    }
+
+    .user.selected {
+      color: #fff;
+      background-color: #0D5995;
+    }
+
+    .user.selected .sip {
+      color: #fff;
+    }
+
+    .sip:hover {
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    #dial-pending-box {
+      position: absolute;
+      right: 126px;
+      width: 132px;
+      top: 22px;
+      z-index: 1;
+
+      border: 1px solid #999;
+      border-top: none;
+
+      border-bottom-left-radius: 6px;
+      border-bottom-right-radius: 6px;
+      -moz-border-bottom-left-radius: 6px;
+      -moz-border-bottom-right-radius: 6px;
+      -webkit-border-bottom-left-radius: 6px;
+      -webkit-border-bottom-right-radius: 6px;
+
+      background-color: #D5D5D5;
+      opacity: 0.9;
+
+      padding: 0 10px 5px;
+    }
+
+    .dial-pending {
+      display: none;
+
+      font-size: 11px;
+      color: white;
+      margin-top: 10px;
+    }
+
+    .dial-pending {
+      -moz-animation-duration: 1s;
+      -moz-animation-name: slidedown;
+    }
+
+    @-moz-keyframes slidedown {
+      from {
+        margin-top: -10px;
+      }
+
+      to {
+        margin-top: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id='header' class='header'><h1>Junction Quick Dialer</h1></div>
+  <div id="app-container" class="app-container"></div>
+
+  <div class="dial-pending" id="dial-pending-tpl" _text="Dialing %@ from %@"></div>
+  <div id="dial-pending-box"></div>
+
+  <script src="jnctn.js" type="text/javascript"></script>
+  <script src="https://www.google.com/jsapi?key=ABQIAAAA0VYS1L9SKVp6DOi3PcUQ-RSnmapgpe8umwfvU0S5MBoRLZcVshQHV3MEAahGdzNpGZ3n3065K0sIUQ" type="text/javascript"></script>
+  <script type="text/javascript">
+    google.load("jquery", "1.7");
+    google.load("jqueryui", "1.8.12");
+  </script>
+  <script type="text/javascript">
+    var userTpl = "<div class='user' name='%@' sip='%@' user-id='%@'/>";
+    var loginTpl = "<div id='app-login' class='app-state'><input type='text' name='username'/><input type='password' name='password'/><input type='button' name='login'/></div>";
+    var loadingTpl = "<div id='app-loading' class='app-state'>loading...</div>";
+    var loadedTpl = "<div id='app-loaded' class='app-state'>" +
+                      "<div class='user-list'></div>" +
+                      "<div class='user-info'></div>" +
+                    "</div>";
+
+    var App = {
+      api: Jnctn.API.extend({
+        requestAdapter: Jnctn.JSONPRequest.extend({
+          timeout: 30000 // 10s
+        })
+      }),
+
+      session: {},
+
+      callSetup: function(fromAddress,toAddress,cbs) {
+        var args = {
+          fromAddress: fromAddress,
+          toAddress: toAddress
+        }
+        this._makeRequest('callSetup',args,cbs);
+      },
+
+      sessionDestroy: function(cbs) {
+        this._makeRequest('sessionDestroy',{},cbs);
+      },
+
+      login: function(username,password,cbs) {
+        var that = this;
+        var args = {
+          username: username,
+          password: password
+        };
+        var callbacks = {
+          success: function() {
+            that._loginDidSucceed.apply(that,arguments);
+            if (cbs && cbs.success) cbs.success.apply(this,arguments);
+          },
+          error: function() {
+            that._loginDidError.apply(that,arguments);
+            if (cbs && cbs.error) cbs.error.apply(this,arguments);
+          }
+        };
+        this._makeRequest('sessionCreate',args,callbacks);
+      },
+
+      userRead: function(args,cbs) {
+        var that = this;
+        args = args || {};
+        var callbacks = {
+          success: function() {
+            that._userReadDidSucceed.apply(that,arguments);
+            if (cbs && cbs.success) cbs.success.apply(this,arguments);
+          },
+          error: function() {
+            that._userReadDidError.apply(that,arguments);
+            if (cbs && cbs.error) cbs.error.apply(this,arguments);
+          }
+        }
+        this._makeRequest('userRead',args,callbacks);
+      },
+
+      userAddressBrowse: function(args,cbs) {
+        var that = this;
+        args = args || {};
+        var callbacks = {
+          success: function() {
+            that._userAddressBrowseDidSucceed.apply(that,arguments);
+            if (cbs && cbs.success) cbs.success.apply(this,arguments);
+          },
+          error: function() {
+            that._userAddressBrowseDidError.apply(that,arguments);
+            if (cbs && cbs.error) cbs.error.apply(this,arguments);
+          }
+        }
+        this._makeRequest('userAddressBrowse',args,callbacks);
+      },
+
+      _loginDidSucceed: function(result,rawResponse) {
+//        console.info('login success',arguments);
+        this.session.sessionId = result.SessionId;
+        this.session.userId = result.UserId;
+      },
+
+      _loginDidError: function() {
+//        console.error('login error',arguments);
+      },
+
+      _userReadDidSucceed: function() {
+//        console.info('user read success',arguments);
+      },
+
+      _userReadDidError: function() {
+//        console.error('user read error',arguments);
+      },
+
+      _userAddressBrowseDidSucceed: function() {
+//        console.info('user address browse success',arguments);
+      },
+
+      _userAddressBrowseDidError: function() {
+//        console.error('user address browse error',arguments);
+      },
+
+      _makeRequest: function(action, args, callbacks) {
+        var sessionId = this.session.sessionId;
+        args = args || {};
+        if (sessionId) {
+          args.sessionId = sessionId;
+        }
+        this.api.get(action,args,callbacks);
+      }
+    }
+
+    UI = {
+      App: {
+
+        me: {
+          userId: null,
+          userAddresses: null,
+          user: null
+        },
+
+        start: function() {
+          updateView('.app-container',loginTpl);
+          UI.clickHandlers.setup();
+        },
+
+        _handleError: function(args) {
+//          console.error(args);
+          alert(args.Code + "\n" + args.Message);
+        },
+
+        logout: function() {
+          App.sessionDestroy({
+            success: location.reload,
+            error: location.reload
+          });
+        },
+
+        doLogin: function() {
+          var username = $('input[name=username]').val();
+          var password = $('input[name=password]').val();
+          App.login(username,password,{
+            success: function() { UI.App._doLoginSuccess.apply(UI.App,arguments); },
+            error: function() { UI.App._handleError.apply(UI.App,arguments); }
+          });
+        },
+
+        dial: function(to) {
+          var from = $('#dial-from select').val() || UI.App.me.userAddresses[0];
+          var myDomain = UI.App.me.user.Domain;
+          if (to.indexOf("@") < 0) to += "@" + myDomain;
+          to = to.replace(/^sip[s]?:/,'');
+
+          var dialId = UI.App._showDialing(from,to);
+
+          App.callSetup(from,to,{
+            success: function() {
+              UI.App._hideDialing(dialId);
+            },
+            error: function(e) {
+              UI.App._hideDialing(dialId);
+              if (e !== Jnctn.TimeoutError) UI.App._handleError.apply(UI.App,arguments);
+            }
+          });
+        },
+
+        _showDialing: function(from,to) {
+          var el = $('#dial-pending-tpl').clone();
+          var id = 'dial-pending-' + (new Date()).valueOf();
+          var text = $('#dial-pending-tpl').attr('_text');
+
+          var userPattern = /^([^@]*)@.*/;
+          var fMatches = from.match(userPattern);
+          var tMatches = to.match(userPattern);
+          from = fMatches ? fMatches[1] : from;
+          to = tMatches ? tMatches[1] : to;
+
+          text = text.replace('%@',to).replace('%@',from);
+          $(el)
+            .attr('id',id)
+            .html(text);
+
+          $('#dial-pending-box').append(el);
+          $(el).show();
+
+          setTimeout(function() {
+            UI.App._hideDialing(id);
+          },5000)
+
+          return id;
+        },
+
+        _hideDialing: function(id) {
+          $('#' + id)
+            .hide()
+            .remove();
+        },
+
+        _doLoginSuccess: function(args) {
+          updateView('.app-container',loadingTpl);
+
+          UI.App.me.userId = args.UserId;
+          App.userRead({ userId: UI.App.me.userId }, {
+            success: function() {
+              UI.App._storeMyUserInfo.apply(UI.App,arguments);
+              var orgId = UI.App.me.user.OrganizationId;
+
+              App.userAddressBrowse({ limit: 'max', organizationId: orgId },{
+                success: function() { UI.App._doUserAddressBrowseSuccess.apply(UI.App,arguments); }
+              });
+            },
+            error: function() { UI.App._handleError.apply(UI.App,arguments); }
+          });
+          App.userAddressBrowse({ userId: UI.App.me.userId }, {
+            success: function() {
+              UI.App._storeMyUserAddresses.apply(UI.App,arguments);
+              UI.App._setCallFromSelect();
+            },
+            error: function() { UI.App._handleError.apply(UI.App,arguments); }
+          });
+        },
+
+        _storeMyUserInfo: function(user) {
+          UI.App.me.user = user;
+        },
+
+        _storeMyUserAddresses: function(addresses) {
+          addresses = addresses.length ? addresses : [addresses];
+          var sipAddresses = [];
+          for (var i=0,l=addresses.length;i<l;i++) {
+            sipAddresses.push(addresses[i].Address.Username + "@" + addresses[i].Address.Domain);
+          }
+
+          UI.App.me.userAddresses = sipAddresses;
+        },
+
+        _setCallFromSelect: function() {
+          var myAddresses = UI.App.me.userAddresses;
+          var selectHtml = '<div id="dial-from">Dial As: <select>%@</select></div>'
+          var optionHtml = "";
+          for (var i=0,l=myAddresses.length;i<l;i++) {
+            var addr = myAddresses[i];
+            var selected = i == 0 ? 'selected' : ''
+            optionHtml += "<option value='%@' %@>%@</option>".replace('%@',addr).replace('%@',selected).replace('%@',addr);
+          }
+
+          $('#header').append(selectHtml.replace('%@',optionHtml));
+        },
+
+        _doUserAddressBrowseSuccess: function(userAddresses) {
+          updateView('.app-container',loadedTpl);
+
+          var a = userAddresses.sort(function(a,b) {
+            var aName = a.Address.Name;
+            var bName = b.Address.Name;
+
+            return (aName < bName) ? -1 : 1;
+          });
+
+          var userAddressHTML = "", ua, name, sipAddress;
+          for (var i=0,l=userAddresses.length;i<l;i++) {
+            ua = userAddresses[i];
+            name = ua.Address.Name;
+            sipAddress = ua.Address.Username + "@" + ua.Address.Domain;
+            userAddressHTML += userTpl.replace('%@',name).replace('%@',sipAddress).replace('%@',ua.UserId);
+          }
+
+          updateView('.user-list',userAddressHTML);
+        },
+
+        setCurrentUser: function(userId) {
+          updateView('.user-info',"loading...");
+          App.userRead({ userId: userId },{
+            success: function() { UI.App._doUserInfoUpdate.apply(UI.App,arguments); },
+            error: function() { UI.App._handleError.apply(UI.App,arguments); }
+          });
+        },
+
+        _doUserInfoUpdate: function(user) {
+          var html = '<div class="user-name">%@</div>'.replace('%@',user.Contact.Name);
+
+          var tpl = '<div class="user-contact">%@<div class="user-sip-addresses"></div></div>';
+          var contact = user.Contact;
+
+          var fields = ['Organization', 'Email', 'Phone'];
+          for (var i=0,l=fields.length;i<l;i++) {
+            html += UI.App._userContactHtmlForValue(fields[i],contact[fields[i]]);
+          }
+
+          App.userAddressBrowse({ userId: user.UserId },{success: function() { UI.App._doUserInfoAddressUpdate.apply(UI.App,arguments) }});
+
+          updateView('.user-info',tpl.replace('%@',html));
+        },
+
+        _doUserInfoAddressUpdate: function(addresses) {
+          var html = "";
+
+          addresses = addresses.length ? addresses : [addresses];
+          var sipAddresses = [];
+          for (var i=0,l=addresses.length;i<l;i++) {
+            sipAddresses.push("<div class='sip'>" + addresses[i].Address.Username + "@" + addresses[i].Address.Domain + "</div>");
+          }
+
+          html = UI.App._userContactHtmlForValue('SIP Address',sipAddresses.join(""));
+          updateView('.user-info .user-sip-addresses',html);
+        },
+
+        _userContactHtmlForValue: function(label,value,valueClasses) {
+          var contactTpl = '<div class="user-contact-pair"><div class="user-contact-label %@">%@</div><div class="user-contact-value %@">%@</div></div>';
+          value = value || "Unknown";
+          var klass = label.toLowerCase().replace(/\s/g,'-');
+
+          valueClasses = valueClasses || "";
+          return contactTpl.replace('%@',klass).replace('%@',label).replace('%@',valueClasses).replace('%@',value);
+        }
+      },
+
+      modified: function(evt) {
+        var insertedEl = $(evt.target);
+
+        if (insertedEl.hasClass('app-state')) {
+          var id = insertedEl.attr('id');
+          UI.changeUIState(id,insertedEl);
+        } else {
+          var classes = insertedEl.attr('class').split(" "), c;
+          for (var i=0,l=classes.length;i<l;i++) {
+            c = "." + classes[i];
+            if (UI.transforms[c]) UI.transforms[c].apply(insertedEl);
+          }
+        }
+      },
+
+      changeUIState: function(id,insertedEl) {
+        id = "#" + id;
+        // allow functions to modify each base template
+        if (UI.transforms[id]) UI.transforms[id].apply(insertedEl);
+
+        // generic key handling abilities
+        if (UI.keyHandlers[id]) {
+          $(window).on("keypress", function(evt) {
+            if (UI.keyHandlers[id].apply(this,[evt])) evt.preventDefault();
+          })
+        } else {
+          $(window).off("keypress");
+        }
+      },
+
+      transforms: {
+        '#app-login': function() {
+          $(this).find('input')
+            .each(function(i,el) {
+              var v = $(this).attr('name');
+              v = v == 'username' ? 'SIP Address' : v;
+              v = v == 'login' ? 'Login' : v;
+
+              this._text = v;
+              $(this).val(v);
+            });
+
+          $(this).find('input[name=login]').on('click', function() {
+            UI.App.doLogin();
+          });
+        },
+
+        '#app-loaded': function() {
+          var html = '<div class="dialer"><input class="dialer-input" name="sip" type="text" value="SIP Address or Exten"/><input type="button" class="dial-button" value="dial"/></div>';
+          html += '<div class="logout">logout</div>';
+          $('#header').append(html);
+        },
+
+        '.user': function() {
+          var nameTpl = "<div class='name'>%@</div>";
+          var sipTpl = "<div class='sip'>%@</div>";
+          var callButton = "<div class='call-button sip'>%@</div>";
+          var html = nameTpl.replace('%@',$(this).attr('name'));
+          html += sipTpl.replace('%@',$(this).attr('sip'));
+          html += callButton.replace('%@',$(this).attr('sip'));
+          $(this).html(html);
+        }
+      },
+
+      clickHandlers: {
+        setup: function() {
+          for (var p in UI.clickHandlers) if (p !== 'setup' && UI.clickHandlers.hasOwnProperty(p)) {
+            $(document).on('click',p,UI.clickHandlers[p]);
+          }
+        },
+
+        '#app-login input[type=text]': function() {
+          if ($(this).val() == this._text) {
+            $(this).val('');
+          }
+        },
+
+        '#app-login input[type=password]': function() {
+          if ($(this).val() == $(this).attr('name')) {
+            $(this).val('');
+          }
+        },
+
+        '.logout': function(evt) {
+          UI.App.logout();
+        },
+
+        '.dialer-input': function(evt) {
+          if ($(this).val() == "SIP Address or Exten") {
+            this._text = "SIP Address or Exten";
+            $(this).val("");
+          }
+        },
+
+        '.dial-button': function(evt) {
+          var to = $(".dialer input[name=sip]").val();
+          UI.App.dial(to);
+
+          $('.dialer-input').val($('.dialer-input')[0]._text);
+        },
+
+        '.sip': function(evt) {
+          try {
+            var to = $(this).html();
+            UI.App.dial(to);
+          } catch (e) {
+//            console.error(e);
+          }
+        },
+
+        '.user': function(evt) {
+          var isSelected = $(this).hasClass('selected');
+          if (!isSelected) {
+            $('.user').removeClass('selected');
+            $(this).addClass('selected');
+          }
+
+          UI.App.setCurrentUser($(this).attr('user-id'));
+          evt.preventDefault();
+        }
+      },
+
+      // return true to prevent event default
+      keyHandlers: {
+        RETURN_CODE: 13,
+
+        '#app-login': function(evt) {
+          if (evt.keyCode == UI.keyHandlers.RETURN_CODE) {
+            UI.App.doLogin();
+            return true;
+          }
+        }
+      }
+    }
+
+    function updateView(sel,html) {
+      $(sel).html(html);
+    }
+
+    $(document).ready(function() {
+      $('.app-container').on('DOMNodeInserted',UI.modified);
+      UI.App.start();
+    })
+  </script>
+</body>
+</html>
