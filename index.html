@@ -105,16 +105,6 @@
       width: 200px;
     }
 
-    .user-list {
-      position: absolute;
-      left: 0;
-      width: 45%;
-      height: 100%;
-      overflow-y: auto;
-      overflow-x: hidden;
-      border-right: 1px solid #999;
-    }
-
     .user-info {
       position: absolute;
       right: 0;
@@ -156,6 +146,57 @@
     .user-info .user-contact .user-contact-value {
       display: inline-block;
       position: relative;
+    }
+
+    .user-list-container {
+      position: absolute;
+      left: 0;
+      width: 45%;
+      height: 100%;
+      border-right: 1px solid #999;
+    }
+
+    .user-filter {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 39px; /* + 6px padding = 45px */
+      padding: 3px;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .user-filter span {
+      position: absolute;
+      left: 4px;
+      top: 10px;
+      z-index: 0;
+
+      font-size: 1.4em;
+      color: #aaa;
+    }
+
+    .user-filter input {
+      position: relative;
+      height: 100%;
+      width: 100%;
+      border: 0;
+
+      background-color: transparent;
+      z-index: 2;
+
+      font-size: 1.4em;
+      color: #aaa;
+    }
+
+    .user-list {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 46px;
+      bottom: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
     }
 
     .user {
@@ -275,7 +316,13 @@
     var loginTpl = "<div id='app-login' class='app-state'><input type='text' name='username'/><input type='password' name='password'/><input type='button' name='login'/></div>";
     var loadingTpl = "<div id='app-loading' class='app-state'>loading...</div>";
     var loadedTpl = "<div id='app-loaded' class='app-state'>" +
-                      "<div class='user-list'></div>" +
+                      "<div class='user-list-container'>" +
+                        "<div class='user-filter'>" +
+                          "<span>Type to Search</span>" +
+                          "<input type='text' name='user-filter'/>" +
+                        "</div>" +
+                        "<div class='user-list'/>" +
+                      "</div>" +
                       "<div class='user-info'></div>" +
                     "</div>";
 
@@ -398,6 +445,8 @@
     UI = {
       App: {
 
+        userViewMap: {},
+
         me: {
           userId: null,
           userAddresses: null,
@@ -408,6 +457,8 @@
           updateView('.app-container',loginTpl);
           UI.clickHandlers.setup();
           UI.keyHandlers.setup();
+          UI.changeHandlers.setup();
+          UI.focusBlurHandlers.setup();
         },
 
         _handleError: function(args) {
@@ -450,6 +501,30 @@
               }
             }
           });
+        },
+
+        filterUsers: function(filterString) {
+          if (!filterString) {
+            $('.user').show();
+            return;
+          }
+
+          var reg = new RegExp("^%@".fmt(filterString),"i");
+          for (var name in UI.App.userViewMap) if (UI.App.userViewMap.hasOwnProperty(name)) {
+            var words = name.split(' ');
+            var m = $().hide;
+            for (var w=0,wl=words.length;w<wl;w++) {
+              if (reg.test(words[w])) {
+                m = $().show;
+                break;
+              }
+            }
+
+            var users = UI.App.userViewMap[name];
+            for (var i=0,l=users.length;i<l;i++) {
+              m.call($(users[i]));
+            }
+          }
         },
 
         _sipAddressNormalize: function(addr) {
@@ -581,6 +656,12 @@
           }
 
           updateView('.user-list',userAddressHTML);
+
+          $('.user').each(function() {
+            var name = $(this).attr('name');
+            UI.App.userViewMap[name] = UI.App.userViewMap[name] || [];
+            UI.App.userViewMap[name].push(this);
+          });
         },
 
         setCurrentUser: function(userId) {
@@ -741,11 +822,44 @@
         }
       },
 
+      changeHandlers: {
+        setup: function() {
+          var handlers = UI.changeHandlers;
+          for (var p in handlers) if (p !== 'setup' && handlers.hasOwnProperty(p)) {
+            $(document).on('change',p,handlers[p]);
+          }
+        },
+
+        '.user-filter input': function(evt) {
+          UI.App.filterUsers($(this).val());
+        }
+      },
+
+      focusBlurHandlers: {
+        setup: function() {
+          var handlers = UI.focusBlurHandlers;
+          for (var p in handlers) if (p !== 'setup' && handlers.hasOwnProperty(p)) {
+            $(document).on('focus',p,handlers[p]);
+            $(document).on('blur',p,handlers[p]);
+          }
+        },
+
+        '.user-filter input': function(evt) {
+          var isFocus = evt.type === 'focusin';
+          if (isFocus) {
+            $('.user-filter span').hide();
+          } else if (!$(this).val()) {
+            $('.user-filter span').show();
+          }
+        }
+      },
+
       // return true to prevent event default
       keyHandlers: {
         setup: function() {
-          for (var p in UI.keyHandlers) if (p !== 'setup' && UI.keyHandlers.hasOwnProperty(p)) {
-            $(document).on('keypress',p,UI.keyHandlers[p]);
+          var handlers = UI.keyHandlers;
+          for (var p in handlers) if (p !== 'setup' && handlers.hasOwnProperty(p)) {
+            $(document).on('keypress',p,handlers[p]);
           }
         },
 
@@ -762,6 +876,15 @@
           if (evt.keyCode == UI.keyHandlers.RETURN_CODE) {
             $('.dial-button').click();
             return true;
+          }
+        },
+
+        '.user-filter input': function(evt) {
+          if (evt.keyCode != UI.keyHandlers.RETURN_CODE) {
+            var that = this;
+            // hack because the value of this hasn't applied until
+            // after the event bubbling phase
+            setTimeout(function() { $(that).trigger('change'); },0);
           }
         }
       }
