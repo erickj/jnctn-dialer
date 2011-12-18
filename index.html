@@ -269,7 +269,6 @@
   <script src="https://www.google.com/jsapi?key=ABQIAAAA0VYS1L9SKVp6DOi3PcUQ-RSnmapgpe8umwfvU0S5MBoRLZcVshQHV3MEAahGdzNpGZ3n3065K0sIUQ" type="text/javascript"></script>
   <script type="text/javascript">
     google.load("jquery", "1.7");
-    google.load("jqueryui", "1.8.12");
   </script>
   <script type="text/javascript">
     var userTpl = "<div class='user' name='%@' sip='%@' user-id='%@'/>";
@@ -280,10 +279,18 @@
                       "<div class='user-info'></div>" +
                     "</div>";
 
+    String.prototype.fmt = function() {
+      var tmp = this.toString();
+      for (var i=0,l=arguments.length;i<l;i++) {
+        tmp = tmp.replace('%@',arguments[i]);
+      }
+      return tmp;
+    }
+
     var App = {
       api: Jnctn.API.extend({
         requestAdapter: Jnctn.JSONPRequest.extend({
-          timeout: 30000 // 10s
+          timeout: 30000 // 30s
         })
       }),
 
@@ -400,6 +407,7 @@
         start: function() {
           updateView('.app-container',loginTpl);
           UI.clickHandlers.setup();
+          UI.keyHandlers.setup();
         },
 
         _handleError: function(args) {
@@ -425,9 +433,7 @@
 
         dial: function(to) {
           var from = $('#dial-from select').val() || UI.App.me.userAddresses[0];
-          var myDomain = UI.App.me.user.Domain;
-          if (to.indexOf("@") < 0) to += "@" + myDomain;
-          to = to.replace(/^sip[s]?:/,'');
+          to = this._sipAddressNormalize(to);
 
           var dialId = UI.App._showDialing(from,to);
 
@@ -437,9 +443,40 @@
             },
             error: function(e) {
               UI.App._hideDialing(dialId);
-              if (e !== Jnctn.TimeoutError) UI.App._handleError.apply(UI.App,arguments);
+              if (!(e instanceof Jnctn.TimeoutError)) {
+                UI.App._handleError.apply(UI.App,arguments);
+              } else if (console && console.log) {
+                console.log('callsetup response timed out, hope it worked :)');
+              }
             }
           });
+        },
+
+        _sipAddressNormalize: function(addr) {
+          addr = addr.replace(/^sip[s]?:/,'');
+
+          var N       = /[2-9]/,
+              X         = /[0-9]/,
+              separator = /[\s\(\)\.\-]/,
+              npa       = new RegExp("%@%@{2}".fmt(N.source, X.source)),
+              nxx       = new RegExp("%@%@{2}".fmt(N.source, X.source)),
+              xxxx      = new RegExp("%@{4}".fmt(X.source)),
+              number    = new RegExp("[+]?[1]?(?:%@)?(%@)(?:%@){0,2}(%@)(?:%@)?(%@)".fmt(separator.source,
+                                                                                         npa.source,
+                                                                                         separator.source,
+                                                                                         nxx.source,
+                                                                                         separator.source,
+                                                                                         xxxx.source));
+          var matches;
+          if ((matches = addr.match(number))) {
+            addr = "1" + [matches[1], matches[2], matches[3]].join("");
+          }
+
+          if (addr.indexOf("@") < 0) {
+            addr += "@" + UI.App.me.user.Domain;
+          }
+
+          return addr;
         },
 
         _showDialing: function(from,to) {
@@ -453,7 +490,7 @@
           from = fMatches ? fMatches[1] : from;
           to = tMatches ? tMatches[1] : to;
 
-          text = text.replace('%@',to).replace('%@',from);
+          text = text.fmt(to,from)
           $(el)
             .attr('id',id)
             .html(text);
@@ -519,7 +556,7 @@
           for (var i=0,l=myAddresses.length;i<l;i++) {
             var addr = myAddresses[i];
             var selected = i == 0 ? 'selected' : ''
-            optionHtml += "<option value='%@' %@>%@</option>".replace('%@',addr).replace('%@',selected).replace('%@',addr);
+            optionHtml += "<option value='%@' %@>%@</option>".fmt(addr,selected,addr);
           }
 
           $('#header').append(selectHtml.replace('%@',optionHtml));
@@ -612,15 +649,6 @@
         id = "#" + id;
         // allow functions to modify each base template
         if (UI.transforms[id]) UI.transforms[id].apply(insertedEl);
-
-        // generic key handling abilities
-        if (UI.keyHandlers[id]) {
-          $(window).on("keypress", function(evt) {
-            if (UI.keyHandlers[id].apply(this,[evt])) evt.preventDefault();
-          })
-        } else {
-          $(window).off("keypress");
-        }
       },
 
       transforms: {
@@ -634,15 +662,15 @@
               this._text = v;
               $(this).val(v);
             });
-
-          $(this).find('input[name=login]').on('click', function() {
-            UI.App.doLogin();
-          });
         },
 
         '#app-loaded': function() {
-          var html = '<div class="dialer"><input class="dialer-input" name="sip" type="text" value="SIP Address or Exten"/><input type="button" class="dial-button" value="dial"/></div>';
-          html += '<div class="logout">logout</div>';
+          var html = '<div class="dialer">' +
+                       '<input class="dialer-input" name="sip" type="text" value="SIP Address or Exten"/>' +
+                       '<input type="button" class="dial-button" value="dial"/>' +
+                     '</div>' +
+                     '<div class="logout">logout</div>';
+
           $('#header').append(html);
         },
 
@@ -664,16 +692,14 @@
           }
         },
 
-        '#app-login input[type=text]': function() {
+        '#app-login input[type=text],#app-login input[type=password]': function() {
           if ($(this).val() == this._text) {
             $(this).val('');
           }
         },
 
-        '#app-login input[type=password]': function() {
-          if ($(this).val() == $(this).attr('name')) {
-            $(this).val('');
-          }
+        'input[name=login]': function() {
+          UI.App.doLogin();
         },
 
         '.logout': function(evt) {
@@ -717,11 +743,24 @@
 
       // return true to prevent event default
       keyHandlers: {
+        setup: function() {
+          for (var p in UI.keyHandlers) if (p !== 'setup' && UI.keyHandlers.hasOwnProperty(p)) {
+            $(document).on('keypress',p,UI.keyHandlers[p]);
+          }
+        },
+
         RETURN_CODE: 13,
 
-        '#app-login': function(evt) {
+        '#app-login input[type=text],#app-login input[type=password]': function(evt) {
           if (evt.keyCode == UI.keyHandlers.RETURN_CODE) {
-            UI.App.doLogin();
+            $('input[name=login]').click();
+            return true;
+          }
+        },
+
+        '.dialer-input': function(evt) {
+          if (evt.keyCode == UI.keyHandlers.RETURN_CODE) {
+            $('.dial-button').click();
             return true;
           }
         }
